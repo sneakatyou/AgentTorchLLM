@@ -69,7 +69,7 @@ class LangchainMemoryHandler(MemoryHandler):
 
     def save_memory(self, query, output, agent_id):
         self.agent_memory[agent_id].save_context(
-            {"input": query["agent_query"]}, {"output": output["text"]}
+            {"input": query["agent_query"]}, {"output": output}
         )
 
     def get_memory(self, last_k, agent_id):

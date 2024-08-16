@@ -30,7 +30,7 @@ class LLM(ABC):
 
 
 class DspyLLM(LLM):
-    def __init__(self, openai_api_key, qa, cot, model="gpt-3.5-turbo"):
+    def __init__(self, openai_api_key, qa, cot, model="gpt-4o-mini"):
         super().__init__()
         self.qa = qa
         self.cot = cot
@@ -40,7 +40,7 @@ class DspyLLM(LLM):
 
     def initialize_llm(self):
         self.llm = dspy.OpenAI(
-            model=self.model, api_key=self.openai_api_key, temperature=0.0
+            model=self.model, api_key=self.openai_api_key, temperature=0.7
         )
         dspy.settings.configure(lm=self.llm)
         self.predictor = self.cot(self.qa)
@@ -92,11 +92,11 @@ class LangchainLLM(LLM):
         self,
         openai_api_key,
         agent_profile,
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
     ):
         super().__init__()
         self.backend = "langchain"
-        self.llm = ChatOpenAI(model=model, openai_api_key=openai_api_key, temperature=1)
+        self.llm = ChatOpenAI(model=model, openai_api_key=openai_api_key, temperature=0.2)
         self.prompt_template = ChatPromptTemplate.from_messages(
             [
                 SystemMessagePromptTemplate.from_template(agent_profile),
@@ -128,17 +128,17 @@ class LangchainLLM(LLM):
 
     def langchain_query_and_get_answer(self, prompt_input):
         if type(prompt_input) is str:
-            agent_output = self.predictor.apply(
+            agent_output = self.predictor.invoke(
                 {"user_prompt": prompt_input, "chat_history": []}
             )
         else:
-            agent_output = self.predictor.apply(
+            agent_output = self.predictor.invoke(
                 {
                     "user_prompt": prompt_input["agent_query"],
                     "chat_history": prompt_input["chat_history"],
                 }
             )
-        return agent_output
+        return agent_output['text']
 
     def inspect_history(self, last_k, file_dir):
         raise NotImplementedError(
